@@ -1,0 +1,79 @@
+---
+import downrow from '@/assets/videos/downrow.gif';
+import { Image } from 'astro:assets';
+---
+
+<div class="w-screen flex overflow-hidden text-texto pb-6 md:pb-10">
+ <div
+   class="flex flex-col md:justify-center md:items-center w-full h-full px-8 md:px-0"
+ >
+   <div class="flex flex-col items-start">
+     <h2 class="text-6xl md:text-7xl font-Seasons font-bold mt-8">About</h2>
+     <img
+       src="/images/logo.webp"
+       alt="Logo FilmFrame"
+       class="w-56 md:w-60 mb-4 md:mb-6"
+     />
+   </div>
+   <div
+     class="mx-auto max-w-5xl
+           flex flex-col md:flex-row
+           md:space-x-12
+           space-y-6 md:space-y-0 
+           mb-8
+           md:mb-0"
+   >
+     <p
+       class="md:w-1/2 text-md leading-relaxed font-Seasons font-normal md:pl-20"
+     >
+       At Film Frame, we believe that every story deserves to be told with
+       intention, sensitivity, and a cinematic touch. We don't just record
+       weddings. We capture real emotions and transform them into memories that
+       last forever.
+       <br /><br />
+       We're driven by the search for those unique moments that often go unnoticed:
+       a knowing glance, a spontaneous laugh, a sincere touch.
+     </p>
+
+     <p
+       class="md:w-1/2 text-md leading-relaxed font-Seasons font-normal md:pr-20"
+     >
+       Details that, when brought together, reveal the essence of those who
+       love each other.
+       <br /><br />
+       It's in the little things — the way they look at each other, the way they
+       hold hands — that we find the real story worth telling.
+     </p>
+   </div>
+   <Image src={downrow} alt="Down Row" class="size-16 -mt-1 md:mt-2 mx-auto md:mx-0"/>
+ </div>
+ <div>
+   <div class="hidden md:block relative" data-div-mediumcircule-down>
+     <div class="bg-amber-300 w-full h-full clip"></div>
+   </div>
+ </div>
+</div>
+
+<style>
+  .clip {
+    border-radius: 100%;
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -100%;
+    right: -100%;
+  }
+</style>
+
+<script is:inline>
+  const divTop = document.querySelectorAll("[data-div-mediumcircule-top]");
+  const divDown = document.querySelectorAll("[data-div-mediumcircule-down]");
+
+  divDown.forEach((divDownElement) => {
+    if (divTop.length > 0) {
+      const rect = divTop[0].getBoundingClientRect();
+      divDownElement.style.width = rect.width + "px";
+      divDownElement.style.height = rect.height + "px";
+    }
+  });
+</script>
