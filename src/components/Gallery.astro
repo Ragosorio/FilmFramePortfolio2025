@@ -248,18 +248,42 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
   document.addEventListener("DOMContentLoaded", () => {
     gsap.registerPlugin(ScrollTrigger);
 
+    // Detectar Chrome móvil específicamente
+    const isChromeMotile = /Chrome/.test(navigator.userAgent) && /Mobile/.test(navigator.userAgent);
+    
     // Configuración específica para Chrome móvil
     ScrollTrigger.config({
-      ignoreMobileResize: true // Clave para Chrome móvil
+      ignoreMobileResize: true,
+      // Para Chrome móvil, ser más conservador
+      autoRefreshEvents: isChromeMotile ? "none" : "visibilitychange,DOMContentLoaded,load"
     });
 
-    const lenis = new Lenis();
+    // Configuración de Lenis específica para Chrome móvil
+    const lenis = new Lenis({
+      duration: isChromeMotile ? 1.5 : 1.2, // Más lento en Chrome móvil
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+      syncTouch: !isChromeMotile // Desactivar syncTouch en Chrome móvil
+    });
+
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((time) => {
       lenis.raf(time * 1000);
     });
 
     gsap.ticker.lagSmoothing(0);
+
+    // Forzar un viewport estable en Chrome móvil
+    if (isChromeMotile) {
+      const initialViewportHeight = window.innerHeight;
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no');
+      }
+      
+      // Establecer altura fija del documento
+      document.documentElement.style.setProperty('--vh', `${initialViewportHeight * 0.01}px`);
+    }
 
     const stickySection = document.querySelector(".steps");
     const cards = document.querySelectorAll(".card:not(.empty)");
@@ -277,18 +301,38 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
     const startAngle = Math.PI / 2 - arcAngle / 2;
 
     let currentCardIndex = 0;
+    let scrollTriggerInstance = null;
 
-    ScrollTrigger.create({
-      trigger: stickySection,
-      start: "top top",
-      end: `+=${stickyHeight}px`,
-      pin: true,
-      pinSpacing: true,
-      onUpdate: (self) => {
-        positionCards(self.progress);
-        updateCounter(self.progress);
-      },
-    });
+    // Función para crear ScrollTrigger con configuración específica
+    function createScrollTrigger() {
+      if (scrollTriggerInstance) {
+        scrollTriggerInstance.kill();
+      }
+
+      scrollTriggerInstance = ScrollTrigger.create({
+        trigger: stickySection,
+        start: "top top",
+        end: `+=${stickyHeight}px`,
+        pin: true,
+        pinSpacing: !isChromeMotile, // Sin pinSpacing en Chrome móvil
+        anticipatePin: !isChromeMotile ? 1 : 0,
+        refreshPriority: isChromeMotile ? -1 : 0,
+        onUpdate: (self) => {
+          positionCards(self.progress);
+          updateCounter(self.progress);
+        },
+        onRefresh: () => {
+          // Asegurar posición inicial correcta
+          positionCards(0);
+          updateCounter(0);
+        }
+      });
+
+      return scrollTriggerInstance;
+    }
+
+    // Crear ScrollTrigger inicial
+    createScrollTrigger();
 
     function positionCards(progress) {
       const radius = getRadius();
@@ -354,106 +398,100 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
     gsap.set(countContainer, { y: 0 });
     updateCounter(0);
 
-    // Fix específico para Chrome móvil - viewport dinámico
+    // Sistema de prevención ultra-agresivo solo para Chrome móvil
+    if (isChromeMotile) {
+      let isInPinnedSection = false;
+      let preventiveTimeout = null;
+
+      // Interceptar todos los cambios de scroll en Chrome móvil
+      const originalScrollTo = window.scrollTo;
+      window.scrollTo = function(x, y) {
+        if (isInPinnedSection && typeof y === 'number') {
+          // Prevenir saltos abruptos durante la sección pinned
+          const currentScroll = window.scrollY;
+          const scrollDiff = Math.abs(y - currentScroll);
+          
+          if (scrollDiff > window.innerHeight) {
+            console.log("Salto abrupto detectado y bloqueado:", scrollDiff);
+            return; // Bloquear el scroll
+          }
+        }
+        return originalScrollTo.call(this, x, y);
+      };
+
+      // Monitorear entrada/salida de la sección pinned
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          isInPinnedSection = entry.isIntersecting;
+        });
+      }, { 
+        threshold: [0, 0.1, 0.9, 1],
+        rootMargin: '0px 0px -10% 0px'
+      });
+      
+      observer.observe(stickySection);
+
+      // Prevención adicional con MutationObserver
+      const mutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && 
+              mutation.attributeName === 'style' && 
+              isInPinnedSection) {
+            
+            clearTimeout(preventiveTimeout);
+            preventiveTimeout = setTimeout(() => {
+              const rect = stickySection.getBoundingClientRect();
+              if (rect.top > 100 || rect.top < -100) {
+                console.log("Mutación anómala detectada - reconstruyendo...");
+                createScrollTrigger();
+              }
+            }, 50);
+          }
+        });
+      });
+      
+      mutationObserver.observe(stickySection, {
+        attributes: true,
+        attributeFilter: ['style']
+      });
+    }
+
+    // Resize handler simplificado
     let resizeTimeout;
     let lastHeight = window.innerHeight;
-    let lastScrollY = 0;
-    let isScrolling = false;
-
-    // Función para detectar si estamos en un estado inconsistente
-    function detectInconsistentState() {
-      const currentScrollY = window.scrollY;
-      const stickyRect = stickySection.getBoundingClientRect();
-      
-      // Si la sección sticky no está visible pero deberían estar las tarjetas
-      if (stickyRect.top > window.innerHeight && currentScrollY > 0) {
-        console.log("Estado inconsistente detectado - corrigiendo...");
-        return true;
-      }
-      return false;
-    }
-
-    // Función de corrección de emergencia
-    function emergencyFix() {
-      lenis.stop();
-      ScrollTrigger.killAll();
-      
-      setTimeout(() => {
-        // Recrear el ScrollTrigger
-        ScrollTrigger.create({
-          trigger: stickySection,
-          start: "top top",
-          end: `+=${stickyHeight}px`,
-          pin: true,
-          pinSpacing: true,
-          onUpdate: (self) => {
-            positionCards(self.progress);
-            updateCounter(self.progress);
-          },
-        });
-        
-        ScrollTrigger.refresh();
-        lenis.start();
-        console.log("Sistema restaurado");
-      }, 200);
-    }
-
-    // Monitorear scroll para detectar problemas
-    lenis.on("scroll", (e) => {
-      isScrolling = true;
-      lastScrollY = e.scroll;
-      
-      // Verificar estado cada cierto scroll
-      if (Math.abs(e.scroll - lastScrollY) > 50) {
-        if (detectInconsistentState()) {
-          emergencyFix();
-        }
-      }
-      
-      setTimeout(() => { isScrolling = false; }, 100);
-    });
 
     window.addEventListener("resize", () => {
-      clearTimeout(resizeTimeout);
-      
-      // Solo refrescar si el cambio de altura es significativo (más de 100px)
-      // Esto evita refrescar por cambios menores de la UI de Chrome
-      const currentHeight = window.innerHeight;
-      const heightDiff = Math.abs(currentHeight - lastHeight);
-      
-      if (heightDiff < 100) {
-        return; // Ignorar cambios pequeños del viewport
-      }
-      
-      resizeTimeout = setTimeout(() => {
-        // Pausar Lenis temporalmente
-        lenis.stop();
+      if (isChromeMotile) {
+        // Para Chrome móvil, ser muy conservador
+        const currentHeight = window.innerHeight;
+        const heightDiff = Math.abs(currentHeight - lastHeight);
         
-        // Verificar estado antes del refresh
-        if (detectInconsistentState()) {
-          emergencyFix();
+        if (heightDiff < 150) { // Threshold más alto
           return;
         }
         
-        // Refrescar ScrollTrigger
-        ScrollTrigger.refresh();
-        positionCards(0);
-        
-        // Reanudar Lenis después de un pequeño delay
-        setTimeout(() => {
-          lenis.start();
-          lastHeight = window.innerHeight;
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          createScrollTrigger(); // Recrear en lugar de refresh
+          lastHeight = currentHeight;
+        }, 300); // Delay más largo
+      } else {
+        // Lógica normal para otros navegadores
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          ScrollTrigger.refresh();
+          positionCards(0);
         }, 100);
-      }, 150); // Delay más largo para evitar múltiples refreshes
+      }
     });
 
-    // Listener adicional para orientationchange (específico de móviles)
-    window.addEventListener("orientationchange", () => {
-      setTimeout(() => {
-        if (detectInconsistentState()) {
-          emergencyFix();
-        }
-      }, 500);
-    });
+    // Solo para Chrome móvil - orientationchange
+    if (isChromeMotile) {
+      window.addEventListener("orientationchange", () => {
+        setTimeout(() => {
+          createScrollTrigger();
+        }, 600);
+      });
+    }
   });
 </script>
