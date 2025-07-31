@@ -248,132 +248,141 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
 
 <script is:inline>
   document.addEventListener("DOMContentLoaded", () => {
-  gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger);
 
-  // Solo la configuración mínima necesaria
-  ScrollTrigger.config({
-    ignoreMobileResize: true
-  });
+    const isChromeMotile =
+      /Chrome/.test(navigator.userAgent) &&
+      /Mobile|Android/.test(navigator.userAgent);
 
-  const lenis = new Lenis();
-  lenis.on("scroll", ScrollTrigger.update);
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
-
-  gsap.ticker.lagSmoothing(0);
-
-  const stickySection = document.querySelector(".steps");
-  const cards = document.querySelectorAll(".card:not(.empty)");
-  const countContainer = document.querySelector(".count-container");
-  const totalCards = cards.length;
-
-  const stickyHeight = window.innerHeight * 2;
-  const getRadius = () => {
-    return window.innerWidth < 900
-      ? window.innerWidth * 7.5
-      : window.innerWidth * 2.5;
-  };
-
-  const arcAngle = Math.PI * 0.4;
-  const startAngle = Math.PI / 2 - arcAngle / 2;
-
-  let currentCardIndex = 0;
-
-  ScrollTrigger.create({
-    trigger: stickySection,
-    start: "top top",
-    end: `+=${stickyHeight}px`,
-    pin: true,
-    pinSpacing: true,
-    onUpdate: (self) => {
-      positionCards(self.progress);
-      updateCounter(self.progress);
-    },
-  });
-
-  function positionCards(progress) {
-    const radius = getRadius();
-    const totalTravel = 1 + totalCards / 7.5;
-    const adjustProgress = (progress * totalTravel - 1) * 0.75;
-
-    cards.forEach((card, i) => {
-      const normalizedProgress = (totalCards - 1 - i) / totalCards;
-      const cardProgress = normalizedProgress + adjustProgress;
-      const angle = startAngle + arcAngle * cardProgress;
-
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      const rotation = (angle - Math.PI / 2) * (180 / Math.PI);
-
-      gsap.set(card, {
-        x: x,
-        y: -y + radius,
-        rotation: -rotation,
-        transformOrigin: "center center",
+    if (isChromeMotile) {
+      ScrollTrigger.config({
+        ignoreMobileResize: true,
       });
+      console.log("Chrome móvil detectado - aplicando fix");
+    }
+
+    const lenis = new Lenis();
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
     });
-  }
 
-  function updateCounter(progress) {
-    const radius = getRadius();
-    const totalTravel = 1 + totalCards / 7.5;
-    const adjustProgress = (progress * totalTravel - 1) * 0.75;
+    gsap.ticker.lagSmoothing(0);
 
-    let minDiff = Infinity;
-    let bestIndex = 0;
+    const stickySection = document.querySelector(".steps");
+    const cards = document.querySelectorAll(".card:not(.empty)");
+    const countContainer = document.querySelector(".count-container");
+    const totalCards = cards.length;
 
-    cards.forEach((card, i) => {
-      const normalizedProgress = (totalCards - 1 - i) / totalCards;
-      const cardProgress = normalizedProgress + adjustProgress;
-      const angle = startAngle + arcAngle * cardProgress;
-      const diff = Math.abs(angle - Math.PI / 2);
+    const stickyHeight = window.innerHeight * 2;
+    const getRadius = () => {
+      return window.innerWidth < 900
+        ? window.innerWidth * 7.5
+        : window.innerWidth * 2.5;
+    };
 
-      if (diff < minDiff) {
-        minDiff = diff;
-        bestIndex = i;
+    const arcAngle = Math.PI * 0.4;
+    const startAngle = Math.PI / 2 - arcAngle / 2;
+
+    let currentCardIndex = 0;
+
+    ScrollTrigger.create({
+      trigger: stickySection,
+      start: "top top",
+      end: `+=${stickyHeight}px`,
+      pin: true,
+      pinSpacing: true,
+      onUpdate: (self) => {
+        positionCards(self.progress);
+        updateCounter(self.progress);
+      },
+    });
+
+    function positionCards(progress) {
+      const radius = getRadius();
+      const totalTravel = 1 + totalCards / 7.5;
+      const adjustProgress = (progress * totalTravel - 1) * 0.75;
+
+      cards.forEach((card, i) => {
+        const normalizedProgress = (totalCards - 1 - i) / totalCards;
+        const cardProgress = normalizedProgress + adjustProgress;
+        const angle = startAngle + arcAngle * cardProgress;
+
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        const rotation = (angle - Math.PI / 2) * (180 / Math.PI);
+
+        gsap.set(card, {
+          x: x,
+          y: -y + radius,
+          rotation: -rotation,
+          transformOrigin: "center center",
+        });
+      });
+    }
+
+    function updateCounter(progress) {
+      const radius = getRadius();
+      const totalTravel = 1 + totalCards / 7.5;
+      const adjustProgress = (progress * totalTravel - 1) * 0.75;
+
+      let minDiff = Infinity;
+      let bestIndex = 0;
+
+      cards.forEach((card, i) => {
+        const normalizedProgress = (totalCards - 1 - i) / totalCards;
+        const cardProgress = normalizedProgress + adjustProgress;
+        const angle = startAngle + arcAngle * cardProgress;
+        const diff = Math.abs(angle - Math.PI / 2);
+
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestIndex = i;
+        }
+      });
+
+      if (bestIndex !== currentCardIndex) {
+        currentCardIndex = bestIndex;
+
+        const slotHeight = window.innerWidth < 900 ? 100 : 150;
+        const targetY = -currentCardIndex * slotHeight;
+
+        gsap.to(countContainer, {
+          y: targetY,
+          duration: 0.3,
+          ease: "power1.out",
+          overwrite: true,
+        });
+      }
+    }
+
+    positionCards(0);
+    gsap.set(countContainer, { y: 0 });
+    updateCounter(0);
+
+    let resizeTimeout;
+    let lastHeight = window.innerHeight;
+
+    window.addEventListener("resize", () => {
+      if (isChromeMotile) {
+        clearTimeout(resizeTimeout);
+
+        const currentHeight = window.innerHeight;
+        const heightDiff = Math.abs(currentHeight - lastHeight);
+
+        if (heightDiff < 120) {
+          return;
+        }
+
+        resizeTimeout = setTimeout(() => {
+          ScrollTrigger.refresh();
+          positionCards(0);
+          lastHeight = currentHeight;
+        }, 200);
+      } else {
+        ScrollTrigger.refresh();
+        positionCards(0);
       }
     });
-
-    if (bestIndex !== currentCardIndex) {
-      currentCardIndex = bestIndex;
-
-      const slotHeight = window.innerWidth < 900 ? 100 : 150;
-      const targetY = -currentCardIndex * slotHeight;
-
-      gsap.to(countContainer, {
-        y: targetY,
-        duration: 0.3,
-        ease: "power1.out",
-        overwrite: true,
-      });
-    }
-  }
-
-  positionCards(0);
-  gsap.set(countContainer, { y: 0 });
-  updateCounter(0);
-
-  // Fix mínimo para Chrome móvil - SOLO esto
-  let resizeTimeout;
-  let lastHeight = window.innerHeight;
-
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimeout);
-    
-    const currentHeight = window.innerHeight;
-    const heightDiff = Math.abs(currentHeight - lastHeight);
-    
-    // Ignorar cambios pequeños (barra de Chrome)
-    if (heightDiff < 120) {
-      return;
-    }
-    
-    resizeTimeout = setTimeout(() => {
-      ScrollTrigger.refresh();
-      positionCards(0);
-      lastHeight = currentHeight;
-    }, 200);
   });
-});
 </script>
