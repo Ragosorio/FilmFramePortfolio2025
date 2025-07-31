@@ -245,26 +245,10 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
   src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js"></script>
 
 <script is:inline>
-  function isMobileChrome() {
-    const userAgent = navigator.userAgent;
-    const isChrome = /Chrome/.test(userAgent) && /Google Inc/.test(navigator.vendor);
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-    return isChrome && isMobile;
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
     gsap.registerPlugin(ScrollTrigger);
 
-    // Configuración de velocidad: más lenta para Chrome móvil
-    const speedMultiplier = isMobileChrome() ? 0.5 : 1;
-    
-    const lenis = new Lenis({
-      duration: isMobileChrome() ? 2.4 : 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smooth: true,
-      smoothTouch: isMobileChrome() ? 0.5 : false,
-    });
-
+    const lenis = new Lenis();
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((time) => {
       lenis.raf(time * 1000);
@@ -277,8 +261,7 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
     const countContainer = document.querySelector(".count-container");
     const totalCards = cards.length;
 
-    const stickyHeight = window.innerHeight * (isMobileChrome() ? 3 : 2);
-    
+    const stickyHeight = window.innerHeight * 2;
     const getRadius = () => {
       return window.innerWidth < 900
         ? window.innerWidth * 7.5
@@ -297,12 +280,8 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
       pin: true,
       pinSpacing: true,
       onUpdate: (self) => {
-        const adjustedProgress = isMobileChrome() ? 
-          Math.pow(self.progress, 1.5) : 
-          self.progress;
-        
-        positionCards(adjustedProgress);
-        updateCounter(adjustedProgress);
+        positionCards(self.progress);
+        updateCounter(self.progress);
       },
     });
 
@@ -355,11 +334,9 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
         const slotHeight = window.innerWidth < 900 ? 100 : 150;
         const targetY = -currentCardIndex * slotHeight;
 
-        const counterDuration = isMobileChrome() ? 0.6 : 0.3;
-
         gsap.to(countContainer, {
           y: targetY,
-          duration: counterDuration,
+          duration: 0.3,
           ease: "power1.out",
           overwrite: true,
         });
