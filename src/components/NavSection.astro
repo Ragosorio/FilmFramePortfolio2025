@@ -300,7 +300,6 @@ const isHomePage = Astro.url.pathname === "/";
           });
 
           setTimeout(() => {
-            // Mostrar el logo del nav justo antes de que termine la animación
             if (navLogo) {
               navLogo.classList.add("show");
             }
@@ -329,18 +328,14 @@ const isHomePage = Astro.url.pathname === "/";
     }
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function initializeApp() {
     handleLoadingAnimation();
     handleMobileMenu();
-  });
+  }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      handleLoadingAnimation();
-      handleMobileMenu();
-    });
+    document.addEventListener("DOMContentLoaded", initializeApp);
   } else {
-    handleLoadingAnimation();
-    handleMobileMenu();
+    initializeApp();
   }
 </script>
