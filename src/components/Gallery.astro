@@ -88,9 +88,7 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
       <div class="card empty"></div>
       <div class="card empty"></div>
     </div>
-    <div
-      class="size-16 absolute bottom-5 md:bottom-0 left-1/2 -translate-x-1/2"
-    >
+    <div class="size-16 absolute bottom-5 md:bottom-0 left-1/2 -translate-x-1/2">
       <Image src={ArrowDown} alt="Arrow Down" class="" />
     </div>
   </section>
@@ -252,7 +250,7 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
 
     // Configuración específica para Chrome móvil
     ScrollTrigger.config({
-      ignoreMobileResize: true, // Clave para Chrome móvil
+      ignoreMobileResize: true // Clave para Chrome móvil
     });
 
     const lenis = new Lenis();
@@ -359,33 +357,103 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
     // Fix específico para Chrome móvil - viewport dinámico
     let resizeTimeout;
     let lastHeight = window.innerHeight;
+    let lastScrollY = 0;
+    let isScrolling = false;
+
+    // Función para detectar si estamos en un estado inconsistente
+    function detectInconsistentState() {
+      const currentScrollY = window.scrollY;
+      const stickyRect = stickySection.getBoundingClientRect();
+      
+      // Si la sección sticky no está visible pero deberían estar las tarjetas
+      if (stickyRect.top > window.innerHeight && currentScrollY > 0) {
+        console.log("Estado inconsistente detectado - corrigiendo...");
+        return true;
+      }
+      return false;
+    }
+
+    // Función de corrección de emergencia
+    function emergencyFix() {
+      lenis.stop();
+      ScrollTrigger.killAll();
+      
+      setTimeout(() => {
+        // Recrear el ScrollTrigger
+        ScrollTrigger.create({
+          trigger: stickySection,
+          start: "top top",
+          end: `+=${stickyHeight}px`,
+          pin: true,
+          pinSpacing: true,
+          onUpdate: (self) => {
+            positionCards(self.progress);
+            updateCounter(self.progress);
+          },
+        });
+        
+        ScrollTrigger.refresh();
+        lenis.start();
+        console.log("Sistema restaurado");
+      }, 200);
+    }
+
+    // Monitorear scroll para detectar problemas
+    lenis.on("scroll", (e) => {
+      isScrolling = true;
+      lastScrollY = e.scroll;
+      
+      // Verificar estado cada cierto scroll
+      if (Math.abs(e.scroll - lastScrollY) > 50) {
+        if (detectInconsistentState()) {
+          emergencyFix();
+        }
+      }
+      
+      setTimeout(() => { isScrolling = false; }, 100);
+    });
 
     window.addEventListener("resize", () => {
       clearTimeout(resizeTimeout);
-
+      
       // Solo refrescar si el cambio de altura es significativo (más de 100px)
       // Esto evita refrescar por cambios menores de la UI de Chrome
       const currentHeight = window.innerHeight;
       const heightDiff = Math.abs(currentHeight - lastHeight);
-
+      
       if (heightDiff < 100) {
         return; // Ignorar cambios pequeños del viewport
       }
-
+      
       resizeTimeout = setTimeout(() => {
         // Pausar Lenis temporalmente
         lenis.stop();
-
+        
+        // Verificar estado antes del refresh
+        if (detectInconsistentState()) {
+          emergencyFix();
+          return;
+        }
+        
         // Refrescar ScrollTrigger
         ScrollTrigger.refresh();
         positionCards(0);
-
+        
         // Reanudar Lenis después de un pequeño delay
         setTimeout(() => {
           lenis.start();
           lastHeight = window.innerHeight;
         }, 100);
       }, 150); // Delay más largo para evitar múltiples refreshes
+    });
+
+    // Listener adicional para orientationchange (específico de móviles)
+    window.addEventListener("orientationchange", () => {
+      setTimeout(() => {
+        if (detectInconsistentState()) {
+          emergencyFix();
+        }
+      }, 500);
     });
   });
 </script>
