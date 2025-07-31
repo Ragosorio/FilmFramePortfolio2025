@@ -250,9 +250,16 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
   document.addEventListener("DOMContentLoaded", () => {
     gsap.registerPlugin(ScrollTrigger);
 
-    const isChromeMotile =
-      /Chrome/.test(navigator.userAgent) &&
-      /Mobile|Android/.test(navigator.userAgent);
+    const isChrome = /Chrome/.test(navigator.userAgent);
+    const isMotile = /Mobile|Android/.test(navigator.userAgent);
+    const isChromeMotile = isChrome && isMotile;
+
+    console.log("Navegador detectado:", {
+      userAgent: navigator.userAgent,
+      isChrome,
+      isMotile,
+      isChromeMotile,
+    });
 
     if (isChromeMotile) {
       ScrollTrigger.config({
