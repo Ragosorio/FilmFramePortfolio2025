@@ -1,85 +1,114 @@
 ---
-import rings from '@/assets/images/wedding-rings.webp';
-import arch from '@/assets/images/wedding-arch.webp';
-import dance from '@/assets/images/dance.webp';
-import { Image } from 'astro:assets';
+import rings from "@/assets/images/wedding-rings.webp";
+import arch from "@/assets/images/wedding-arch.webp";
+import dance from "@/assets/images/dance.webp";
+import { Image } from "astro:assets";
 ---
 
 <div class="w-screen h-dvh bg-texto text-fondo relative overflow-hidden">
-<div class="flex flex-col items-center justify-center h-full px-4 md:px-6 py-12 relative z-10 parallax-container">
-  <h2 class="text-7xl md:text-9xl font-Seasons font-bold mb-w-52 mb-10 md:mb-24">Services</h2>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-6xl text-center">
-    <div class="flex flex-col items-center space-y-6">
-      <Image src={arch} alt="Wedding rings" class="size-8 md:size-16 m-4 md:m-6"/>
-      <h3 class="font-Seasons text-md font-semibold uppercase tracking-wide">
-        Timeless Weddings
-      </h3>
-      <div class="w-52 border-b border-fondo mx-auto"></div>
-      <p class="text-sm font-light max-w-xs font-Seasons">
-        Capture the emotional and authentic moments of your wedding, from the ceremony to the small details that make your day unique.
-      </p>
-    </div>
-    <div class="flex flex-col items-center space-y-6">
-      <Image src={dance} alt="Wedding rings" class="size-8 md:size-16 m-4 md:m-6"/>
-      <h3 class="font-Seasons text-md font-semibold text-fondo uppercase tracking-wide">
-        Scenic Landscapes
-      </h3>
-      <div class="w-52 border-b border-fondo mx-auto"></div>
-      <p class="text-sm font-light max-w-xs font-Seasons">
-        Capture stunning landscapes, with shots that highlight the natural beauty of the environment.
-      </p>
-    </div>
-    <div class="flex flex-col items-center space-y-6">
-      <Image src={rings} alt="Wedding rings" class="size-8 md:size-16 m-4 md:m-6"/>
-      <h3 class="font-Seasons text-md font-semibold uppercase tracking-wide">
-        Event Storytelling
-      </h3>
-      <div class="w-52 border-b border-fondo mx-auto"></div>
-      <p class="text-sm font-light max-w-xs font-Seasons">
-        Photography that tells visual stories, from the small details to the special moments of your most important events.
-      </p>
+  <div
+    class="flex flex-col items-center justify-center w-full h-full px-4 md:px-6 py-12 relative z-10 parallax-container"
+  >
+    <h2
+      class="text-6xl md:text-9xl font-Seasons font-bold mb-w-52 mb-10 md:mb-24"
+    >
+      Services
+    </h2>
+    <div
+      class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 w-full max-w-6xl text-center"
+    >
+      <div class="flex flex-col items-center space-y-6">
+        <Image
+          src={arch}
+          alt="Wedding rings"
+          class="size-8 md:size-16 m-3 md:m-6"
+        />
+        <h3
+          class="font-Seasons text-sm md:text-md font-semibold uppercase tracking-wide"
+        >
+          Timeless Weddings
+        </h3>
+        <div class="w-52 border-b border-fondo mx-auto"></div>
+        <p class="text-xs md:text-sm font-light max-w-xs font-Seasons">
+          Capture the emotional and authentic moments of your wedding, from the
+          ceremony to the small details that make your day unique.
+        </p>
+      </div>
+      <div class="flex flex-col items-center space-y-6">
+        <Image
+          src={dance}
+          alt="Wedding rings"
+          class="size-8 md:size-16 m-3 md:m-6"
+        />
+        <h3
+          class="font-Seasons text-sm md:text-md font-semibold uppercase tracking-wide"
+        >
+          Scenic Landscapes
+        </h3>
+        <div class="w-52 border-b border-fondo mx-auto"></div>
+        <p class="text-xs md:text-sm font-light max-w-xs font-Seasons">
+          Capture stunning landscapes, with shots that highlight the natural
+          beauty of the environment.
+        </p>
+      </div>
+      <div class="flex flex-col items-center space-y-6">
+        <Image
+          src={rings}
+          alt="Wedding rings"
+          class="size-8 md:size-16 m-3 md:m-6"
+        />
+        <h3
+          class="font-Seasons text-sm md:text-md font-semibold uppercase tracking-wide"
+        >
+          Event Storytelling
+        </h3>
+        <div class="w-52 border-b border-fondo mx-auto"></div>
+        <p class="text-xs md:text-sm font-light max-w-xs font-Seasons">
+          Photography that tells visual stories, from the small details to the
+          special moments of your most important events.
+        </p>
+      </div>
     </div>
   </div>
 </div>
-</div>
 
 <script is:inline>
-function initParallax() {
-  const section = document.querySelector('.w-screen.h-dvh');
-  const container = document.querySelector('.parallax-container');
-  
-  if (!section || !container) return;
+  function initParallax() {
+    const section = document.querySelector(".w-screen.h-dvh");
+    const container = document.querySelector(".parallax-container");
 
-  const desktopIntensity = -0.30;  // Intensidad para desktop
-  const mobileIntensity = -0.30;   // Intensidad para móvil (menos sutil)
+    if (!section || !container) return;
 
-  function updateParallax() {
-    const rect = section.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-    const sectionHeight = rect.height;
-    
-    const sectionCenter = rect.top + sectionHeight / 2;
-    const viewportCenter = windowHeight / 2;
-    
-    const distanceFromCenter = sectionCenter - viewportCenter;
-    
-    const isMobile = window.innerWidth < 768;
-    const intensity = isMobile ? mobileIntensity : desktopIntensity;
-    
-    const offset = distanceFromCenter * intensity;
-    
-    container.style.transform = `translateY(${offset}px)`;
+    const desktopIntensity = -0.3; // Intensidad para desktop
+    const mobileIntensity = -0.3; // Intensidad para móvil (menos sutil)
+
+    function updateParallax() {
+      const rect = section.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const sectionHeight = rect.height;
+
+      const sectionCenter = rect.top + sectionHeight / 2;
+      const viewportCenter = windowHeight / 2;
+
+      const distanceFromCenter = sectionCenter - viewportCenter;
+
+      const isMobile = window.innerWidth < 768;
+      const intensity = isMobile ? mobileIntensity : desktopIntensity;
+
+      const offset = distanceFromCenter * intensity;
+
+      container.style.transform = `translateY(${offset}px)`;
+    }
+
+    window.addEventListener("scroll", updateParallax, { passive: true });
+    window.addEventListener("resize", updateParallax, { passive: true });
+
+    updateParallax();
   }
 
-  window.addEventListener('scroll', updateParallax, { passive: true });
-  window.addEventListener('resize', updateParallax, { passive: true });
-  
-  updateParallax();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initParallax);
-} else {
-  initParallax();
-}
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initParallax);
+  } else {
+    initParallax();
+  }
 </script>
