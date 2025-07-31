@@ -88,7 +88,9 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
       <div class="card empty"></div>
       <div class="card empty"></div>
     </div>
-    <div class="size-16 absolute bottom-5 md:bottom-0 left-1/2 -translate-x-1/2">
+    <div
+      class="size-16 absolute bottom-5 md:bottom-0 left-1/2 -translate-x-1/2"
+    >
       <Image src={ArrowDown} alt="Arrow Down" class="" />
     </div>
   </section>
@@ -248,6 +250,11 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
   document.addEventListener("DOMContentLoaded", () => {
     gsap.registerPlugin(ScrollTrigger);
 
+    // Configuración específica para Chrome móvil
+    ScrollTrigger.config({
+      ignoreMobileResize: true, // Clave para Chrome móvil
+    });
+
     const lenis = new Lenis();
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((time) => {
@@ -346,14 +353,39 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
     }
 
     positionCards(0);
-
     gsap.set(countContainer, { y: 0 });
-
     updateCounter(0);
 
+    // Fix específico para Chrome móvil - viewport dinámico
+    let resizeTimeout;
+    let lastHeight = window.innerHeight;
+
     window.addEventListener("resize", () => {
-      ScrollTrigger.refresh();
-      positionCards(0);
+      clearTimeout(resizeTimeout);
+
+      // Solo refrescar si el cambio de altura es significativo (más de 100px)
+      // Esto evita refrescar por cambios menores de la UI de Chrome
+      const currentHeight = window.innerHeight;
+      const heightDiff = Math.abs(currentHeight - lastHeight);
+
+      if (heightDiff < 100) {
+        return; // Ignorar cambios pequeños del viewport
+      }
+
+      resizeTimeout = setTimeout(() => {
+        // Pausar Lenis temporalmente
+        lenis.stop();
+
+        // Refrescar ScrollTrigger
+        ScrollTrigger.refresh();
+        positionCards(0);
+
+        // Reanudar Lenis después de un pequeño delay
+        setTimeout(() => {
+          lenis.start();
+          lastHeight = window.innerHeight;
+        }, 100);
+      }, 150); // Delay más largo para evitar múltiples refreshes
     });
   });
 </script>
