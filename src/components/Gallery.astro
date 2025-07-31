@@ -88,9 +88,7 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
       <div class="card empty"></div>
       <div class="card empty"></div>
     </div>
-    <div
-      class="size-16 absolute bottom-5 md:bottom-0 left-1/2 -translate-x-1/2"
-    >
+    <div class="size-16 absolute bottom-5 md:bottom-0 left-1/2 -translate-x-1/2">
       <Image src={ArrowDown} alt="Arrow Down" class="" />
     </div>
   </section>
@@ -251,28 +249,61 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
     gsap.registerPlugin(ScrollTrigger);
 
     // Detectar Chrome móvil específicamente
-    const isChromeMotile =
-      /Chrome/.test(navigator.userAgent) && /Mobile/.test(navigator.userAgent);
-
+    const isChromeMotile = /Chrome/.test(navigator.userAgent) && /Mobile/.test(navigator.userAgent);
+    
     // Configuración específica para Chrome móvil
     ScrollTrigger.config({
       ignoreMobileResize: true,
       // Para Chrome móvil, ser más conservador
-      autoRefreshEvents: isChromeMotile
-        ? "none"
-        : "visibilitychange,DOMContentLoaded,load",
+      autoRefreshEvents: isChromeMotile ? "none" : "visibilitychange,DOMContentLoaded,load"
     });
 
-    // Configuración de Lenis específica para Chrome móvil
+    // Configuración de Lenis con velocidad adaptativa
     const lenis = new Lenis({
-      duration: isChromeMotile ? 1.0 : 1.2, // Fluido pero estable
+      duration: 1.0, // Fluido por defecto
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smooth: true,
-      syncTouch: isChromeMotile, // Activar syncTouch para mejor sensación
-      touchInertiaMultiplier: isChromeMotile ? 25 : 35, // Más responsivo
-      wheelMultiplier: isChromeMotile ? 0.8 : 1.0, // Suavizar wheel
-      touchMultiplier: isChromeMotile ? 1.2 : 2.0, // Más sensible al touch
+      syncTouch: true,
+      touchInertiaMultiplier: 25,
+      wheelMultiplier: 0.8,
+      touchMultiplier: 1.2
     });
+
+    // Sistema de velocidad adaptativa para Chrome móvil
+    let isNearStickySection = false;
+    let currentScrollSpeed = 1.0;
+
+    if (isChromeMotile) {
+      // Crear zonas de scroll más lento
+      const checkScrollZone = () => {
+        const rect = stickySection.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        
+        // Zona crítica: 200px antes y después de la sección sticky
+        const isInCriticalZone = rect.top < viewportHeight + 200 && rect.bottom > -200;
+        
+        if (isInCriticalZone !== isNearStickySection) {
+          isNearStickySection = isInCriticalZone;
+          
+          if (isInCriticalZone) {
+            // SLOW MODE: Entrar a zona crítica
+            currentScrollSpeed = 0.6;
+            lenis.options.duration = 1.8;
+            lenis.options.touchMultiplier = 0.8;
+            console.log("🐌 Modo lento activado");
+          } else {
+            // FAST MODE: Salir de zona crítica
+            currentScrollSpeed = 1.0;
+            lenis.options.duration = 1.0;
+            lenis.options.touchMultiplier = 1.2;
+            console.log("🚀 Modo fluido activado");
+          }
+        }
+      };
+
+      // Verificar zona durante scroll
+      lenis.on("scroll", checkScrollZone);
+    }
 
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((time) => {
@@ -284,19 +315,13 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
     // Forzar un viewport estable en Chrome móvil
     if (isChromeMotile) {
       const initialViewportHeight = window.innerHeight;
-      const viewport = document.querySelector("meta[name=viewport]");
+      const viewport = document.querySelector('meta[name=viewport]');
       if (viewport) {
-        viewport.setAttribute(
-          "content",
-          "width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
-        );
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no');
       }
-
+      
       // Establecer altura fija del documento
-      document.documentElement.style.setProperty(
-        "--vh",
-        `${initialViewportHeight * 0.01}px`
-      );
+      document.documentElement.style.setProperty('--vh', `${initialViewportHeight * 0.01}px`);
     }
 
     const stickySection = document.querySelector(".steps");
@@ -339,7 +364,7 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
           // Asegurar posición inicial correcta
           positionCards(0);
           updateCounter(0);
-        },
+        }
       });
 
       return scrollTriggerInstance;
@@ -417,46 +442,49 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
       let isInPinnedSection = false;
       let preventiveTimeout = null;
 
-      // Interceptar todos los cambios de scroll en Chrome móvil
+      // Interceptar scrollTo con lógica más inteligente
       const originalScrollTo = window.scrollTo;
-      window.scrollTo = function (x, y) {
-        if (isInPinnedSection && typeof y === "number") {
-          // Prevenir saltos abruptos durante la sección pinned
+      window.scrollTo = function(x, y) {
+        if (typeof y === 'number') {
           const currentScroll = window.scrollY;
           const scrollDiff = Math.abs(y - currentScroll);
-
-          // Solo bloquear saltos REALMENTE grandes (más del doble del viewport)
-          if (scrollDiff > window.innerHeight * 2) {
-            console.log("Salto mega abrupto bloqueado:", scrollDiff);
-            return; // Bloquear solo saltos enormes
+          
+          // Solo bloquear si estamos EN la sección sticky Y es un salto grande
+          const rect = stickySection.getBoundingClientRect();
+          const isInStickySection = rect.top <= 0 && rect.bottom >= window.innerHeight;
+          
+          if (isInStickySection && scrollDiff > window.innerHeight * 1.5) {
+            console.log("🚫 Salto bloqueado en sección sticky:", scrollDiff);
+            return;
           }
         }
         return originalScrollTo.call(this, x, y);
       };
 
-      // Monitorear entrada/salida de la sección pinned
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            isInPinnedSection = entry.isIntersecting;
-          });
-        },
-        {
-          threshold: [0, 0.1, 0.9, 1],
-          rootMargin: "0px 0px -10% 0px",
-        }
-      );
-
+      // Monitorear entrada/salida con mejor precisión
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          // Actualizar estado basado en intersección
+          const isVisible = entry.isIntersecting;
+          const rect = entry.boundingClientRect;
+          
+          // Considerar "en sección" cuando está parcialmente visible
+          isInPinnedSection = isVisible || (rect.top <= 0 && rect.bottom >= 0);
+        });
+      }, { 
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+        rootMargin: '50px 0px 50px 0px' // Margen más generoso
+      });
+      
       observer.observe(stickySection);
 
       // Prevención adicional con MutationObserver
       const mutationObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
-          if (
-            mutation.type === "attributes" &&
-            mutation.attributeName === "style" &&
-            isInPinnedSection
-          ) {
+          if (mutation.type === 'attributes' && 
+              mutation.attributeName === 'style' && 
+              isInPinnedSection) {
+            
             clearTimeout(preventiveTimeout);
             preventiveTimeout = setTimeout(() => {
               const rect = stickySection.getBoundingClientRect();
@@ -468,10 +496,10 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
           }
         });
       });
-
+      
       mutationObserver.observe(stickySection, {
         attributes: true,
-        attributeFilter: ["style"],
+        attributeFilter: ['style']
       });
     }
 
@@ -484,12 +512,11 @@ import ArrowDown from "@/assets/videos/downrow2.gif";
         // Para Chrome móvil, ser muy conservador
         const currentHeight = window.innerHeight;
         const heightDiff = Math.abs(currentHeight - lastHeight);
-
-        if (heightDiff < 150) {
-          // Threshold más alto
+        
+        if (heightDiff < 150) { // Threshold más alto
           return;
         }
-
+        
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
           createScrollTrigger(); // Recrear en lugar de refresh
