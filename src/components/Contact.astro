@@ -1,3 +1,21 @@
-<div class="h-dvh">
+---
+import ContactForm from "@/components/ContactForm.astro";
+---
 
+<div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] w-screen my-8 lg:my-16 px-4 lg:px-10">
+ <div class="flex justify-center">
+   <div class="bg-texto w-full rounded-t-4xl lg:rounded-l-4xl lg:rounded-tr-none flex justify-center">
+     <div class="w-10/12 py-6 lg:py-10">
+       <h3 class="text-detalles1 font-Seasons font-semibold text-3xl lg:text-5xl">
+         Let's work together
+       </h3>
+       <p class="text-fondo font-Seasons text-sm lg:text-md pt-3 mb-6 lg:mb-8">
+         Let's start telling your story. We'll be in touch within 25 hours <br class="hidden lg:block" />
+         <span class="lg:hidden"> </span>to begin capturing the moments that matter most.
+       </p>
+       <ContactForm />
+     </div>
+   </div>
+ </div>
+ <div class="bg-texto w-full rounded-b-4xl lg:rounded-r-4xl lg:rounded-bl-none aspect-video md:aspect-auto"></div>
 </div>

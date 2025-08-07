@@ -2,8 +2,7 @@
 
 @font-face {
   font-family: "TheSeasons";
-  src: url("/fonts/the-seasons/theseasons-reg.woff2") format("woff2"),
-    url("/fonts/the-seasons/theseasons-reg.otf") format("opentype");
+  src: url("/fonts/the-seasons/theseasons-reg.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -11,8 +10,7 @@
 
 @font-face {
   font-family: "TheSeasons";
-  src: url("/fonts/the-seasons/theseasons-bd.woff2") format("woff2"),
-    url("/fonts/the-seasons/theseasons-bd.otf") format("opentype");
+  src: url("/fonts/the-seasons/theseasons-bd.otf") format("opentype");
   font-weight: bold;
   font-style: normal;
   font-display: swap;
@@ -20,8 +18,7 @@
 
 @font-face {
   font-family: "TheSeasons";
-  src: url("/fonts/the-seasons/theseasons-it.woff2") format("woff2"),
-    url("/fonts/the-seasons/theseasons-it.otf") format("opentype");
+  src: url("/fonts/the-seasons/theseasons-it.otf") format("opentype");
   font-weight: normal;
   font-style: italic;
   font-display: swap;
@@ -29,8 +26,7 @@
 
 @font-face {
   font-family: "TheSeasons";
-  src: url("/fonts/the-seasons/theseasons-bdit.woff2") format("woff2"),
-    url("/fonts/the-seasons/theseasons-bdit.otf") format("opentype");
+  src: url("/fonts/the-seasons/theseasons-bdit.otf") format("opentype");
   font-weight: bold;
   font-style: italic;
   font-display: swap;
@@ -38,8 +34,7 @@
 
 @font-face {
   font-family: "TheSeasons";
-  src: url("/fonts/the-seasons/theseasons-lt.woff2") format("woff2"),
-    url("/fonts/the-seasons/theseasons-lt.otf") format("opentype");
+  src: url("/fonts/the-seasons/theseasons-lt.otf") format("opentype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -47,8 +42,7 @@
 
 @font-face {
   font-family: "TheSeasons";
-  src: url("/fonts/the-seasons/theseasons-lit.woff2") format("woff2"),
-    url("/fonts/the-seasons/theseasons-lit.otf") format("opentype");
+  src: url("/fonts/the-seasons/theseasons-lit.otf") format("opentype");
   font-weight: 300;
   font-style: italic;
   font-display: swap;
@@ -73,9 +67,10 @@
 @theme {
   --font-Seasons: "TheSeasons";
   --font-Montserrat: "Montserrat";
-  --color-fondo: #F8F8F8;
+  --color-fondo: #f8f8f8;
   --color-texto: #111;
   --color-detalles1: #d4c0b1;
+  --color-detalles2: #daf0fc;
   --color-detalles2: #daf0fc;
   --color-detalles3: #8a8987;
 }

@@ -1,0 +1,227 @@
+<form action="" class="font-Seasons">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+    <div class="">
+      <label for="Name" class="mb-2 text-sm font-medium text-detalles1"
+        >Name</label
+      >
+      <input
+        type="text"
+        id="Name"
+        class="border border-fondo text-detalles2 text-sm rounded-lg focus:ring-detalles1 focus:border-detalles1 w-full p-2.5"
+        placeholder="Name"
+        required
+      />
+    </div>
+    <div class="mb-5">
+      <label for="LastName" class="mb-2 text-sm font-medium text-detalles1"
+        >Last Name</label
+      >
+      <input
+        type="text"
+        id="LastName"
+        class="border border-fondo text-detalles2 text-sm rounded-lg focus:ring-detalles1 focus:border-detalles1 w-full p-2.5"
+        placeholder="Last name"
+        required
+      />
+    </div>
+  </div>
+  <div class="mb-5">
+    <label for="Email" class="block mb-2 text-sm font-medium text-detalles1"
+      >Email</label
+    >
+    <input
+      type="email"
+      id="Email"
+      class="border border-fondo text-detalles2 text-sm rounded-lg focus:ring-detalles1 focus:border-detalles1 block w-full p-2.5"
+      placeholder="your@email.com"
+      required
+    />
+  </div>
+  <div class="mb-5">
+    <label for="Phone" class="mb-2 text-sm font-medium text-detalles1"
+      >Phone</label
+    >
+    <input
+      type="tel"
+      id="Phone"
+      class="border border-fondo text-detalles2 text-sm rounded-lg focus:ring-detalles1 focus:border-detalles4 w-full p-2.5"
+      placeholder="+502 7778 9990"
+      required
+    />
+  </div>
+  <fieldset class="selection-group">
+    <legend class="text-sm font-medium text-detalles1 mb-3"
+      >Type of coverage</legend
+    >
+
+    <div class="flex flex-col sm:flex-row sm:justify-start gap-3 sm:gap-0 mb-3">
+      <div class="flex items-center">
+        <input
+          type="radio"
+          class="hidden"
+          id="religious"
+          name="coverage_type"
+          value="Religious wedding"
+        />
+        <label class="text-[#ababab] cursor-pointer py-1 sm:pr-8" for="religious"
+          >Religious wedding</label
+        >
+      </div>
+
+      <div class="flex items-center">
+        <input
+          type="radio"
+          class="hidden"
+          id="civil"
+          name="coverage_type"
+          value="Civil wedding"
+        />
+        <label class="text-[#ababab] cursor-pointer py-1" for="civil"
+          >Civil wedding</label
+        >
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row sm:justify-start mb-8 gap-3 sm:gap-0">
+      <div class="flex items-center">
+        <input
+          type="radio"
+          class="hidden"
+          id="save-date"
+          name="coverage_type"
+          value="Save the date"
+        />
+        <label class="text-[#ababab] cursor-pointer py-1 sm:pr-8" for="save-date"
+          >Save the date</label
+        >
+      </div>
+
+      <div class="flex items-center">
+        <input
+          type="radio"
+          class="hidden"
+          id="social"
+          name="coverage_type"
+          value="Social event"
+        />
+        <label class="text-[#ababab] cursor-pointer py-1 sm:pr-8" for="social"
+          >Social event</label
+        >
+      </div>
+
+      <div class="flex items-center flex-wrap">
+        <input
+          type="radio"
+          class="hidden"
+          id="other"
+          name="coverage_type"
+          value="Other"
+        />
+        <label class="text-[#ababab] cursor-pointer py-1" for="other"
+          >Other</label
+        >
+
+        <div
+          class="other-text-container overflow-hidden transition-all duration-500 ease-out ml-1"
+          style="max-height: 0; opacity: 0; width: 0;"
+        >
+          <span class="text-white text-sm">:</span>
+          <input
+            type="text"
+            id="other_text"
+            name="other_text_value"
+            placeholder="Birthday party"
+            class="bg-transparent border-b border-white text-detalles2 placeholder-detalles2 text-sm px-1 py-1 outline-none min-w-32 focus:border-celeste transition-colors duration-200 ml-1"
+          />
+        </div>
+      </div>
+    </div>
+  </fieldset>
+  <button type="submit" class="text-texto text-md rounded-lg bg-detalles1 w-full p-2.5 font-Seasons">Send Message</button>
+</form>
+
+<style>
+ .selection-group label {
+   transition: all 0.3s ease;
+ }
+
+ /* Cuando hay alguna selección, tachar todos los labels */
+ .selection-group:has(input[type="radio"]:checked) label {
+   text-decoration: line-through;
+   text-decoration-thickness: 1px;
+ }
+
+ .selection-group input[type="radio"]:checked + label {
+   color: #daf0fc !important;
+   text-decoration: none !important;
+ }
+
+ #other:checked + label {
+   color: white !important;
+ }
+
+ .other-text-container {
+   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+   display: inline-flex;
+   align-items: center;
+ }
+
+ .other-text-container.show {
+   max-height: 60px !important;
+   opacity: 1 !important;
+   width: 150px !important;
+ }
+
+ #other_text {
+   background: transparent;
+   border: none;
+   border-bottom: 1px solid white;
+   color: #daf0fc;
+   font-size: 14px;
+ }
+
+ #other_text::placeholder {
+   color: #daf0fc;
+   opacity: 0.7;
+ }
+
+ #other_text:focus {
+   outline: none;
+   border-bottom-color: #daf0fc;
+ }
+
+ .selection-group label {
+ }
+</style>
+
+<script is:inline>
+ document.addEventListener("DOMContentLoaded", function () {
+   const otherRadio = document.getElementById("other");
+   const otherTextContainer = document.querySelector(".other-text-container");
+   const otherTextInput = document.getElementById("other_text");
+   const allRadios = document.querySelectorAll('input[name="coverage_type"]');
+
+   function handleOtherOption() {
+     if (otherRadio.checked) {
+       otherTextContainer.classList.add("show");
+       setTimeout(() => {
+         otherTextInput.focus();
+       }, 300);
+     } else {
+       otherTextContainer.classList.remove("show");
+       otherTextInput.value = "";
+     }
+   }
+
+   allRadios.forEach((radio) => {
+     radio.addEventListener("change", handleOtherOption);
+   });
+
+   document
+     .querySelector('label[for="other"]')
+     .addEventListener("click", function () {
+       otherRadio.checked = true;
+       handleOtherOption();
+     });
+ });
+</script>
